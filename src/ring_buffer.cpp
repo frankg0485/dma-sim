@@ -4,7 +4,7 @@
 namespace dma {
 
 RingBuffer::RingBuffer(uint32_t size) : buffer(std::vector<DmaDescriptor>(size, DmaDescriptor{})), mask(size - 1) {
-    assert(size & (size - 1) == 0);
+    assert((size & (size - 1)) == 0);
 }
 
 bool RingBuffer::push(const DmaDescriptor& desc) {
