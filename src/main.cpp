@@ -3,7 +3,6 @@
 
 int main() {
     dma::DmaSimulator sim;
-
     std::cout << "Submitting descriptor...\n";
     sim.async_memcpy(0x1000, 0x2000, 4096);
 
