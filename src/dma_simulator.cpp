@@ -14,7 +14,7 @@ public:
     std::thread engine_thread;
     std::mutex mtx;
     std::condition_variable cv;
-    bool running = true;
+    std::atomic<bool> running{true};
 
     struct WaitFor {
         std::mutex mtx;
@@ -67,10 +67,15 @@ DmaSimulator::DmaSimulator() : pimpl(std::make_unique<Impl>()) {
 }
 
 DmaSimulator::~DmaSimulator() {
-    pimpl->running = false;
+    if (!pimpl) return;
+
+    pimpl->running.store(false);
     pimpl->cv.notify_one();
-    pimpl->engine_thread.join();
-};
+    // check joinable() to prevent std::system_error
+    if (pimpl->engine_thread.joinable()) {
+        pimpl->engine_thread.join();
+    }
+}
 
 void DmaSimulator::async_memcpy(uint64_t src, uint64_t dst, uint64_t size) {
     auto desc = DmaDescriptor{};
