@@ -62,7 +62,10 @@ void DmaSimulator::Impl::engine_loop() {
     }
 }
 
-DmaSimulator::DmaSimulator() : pimpl(std::make_unique<Impl>()) {}
+DmaSimulator::DmaSimulator() : pimpl(std::make_unique<Impl>()) {
+    pimpl->engine_thread = std::thread(&Impl::engine_loop, pimpl.get());
+}
+
 DmaSimulator::~DmaSimulator() {
     pimpl->running = false;
     pimpl->cv.notify_one();
@@ -83,11 +86,6 @@ void DmaSimulator::async_memcpy(uint64_t src, uint64_t dst, uint64_t size) {
 void DmaSimulator::submit_descriptor(const DmaDescriptor& desc) {
     if (!pimpl->ring.push(desc)) {
         std::cerr << "[Simulator] Ring full, dropping descriptor\n";
-    }
-
-    // if thread is invalid (not joinable), then create it
-    if (!pimpl->engine_thread.joinable()) {
-        pimpl->engine_thread = std::thread(&Impl::engine_loop, pimpl.get());
     }
 }
 
