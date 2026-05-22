@@ -9,7 +9,7 @@ public:
     DmaSimulator();
     ~DmaSimulator();
 
-    void async_memcpy(uint64_t src, uint64_t dst, uint64_t size);
+    uint32_t async_memcpy(uint64_t src, uint64_t dst, uint64_t size);
 
     void submit_descriptor(const DmaDescriptor& desc);
     void ring_doorbell();

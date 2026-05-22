@@ -15,6 +15,7 @@ public:
     std::mutex mtx;
     std::condition_variable cv;
     std::atomic<bool> running{true};
+    std::atomic<uint32_t> next_event_id{1};
 
     struct WaitFor {
         std::mutex mtx;
@@ -77,15 +78,18 @@ DmaSimulator::~DmaSimulator() {
     }
 }
 
-void DmaSimulator::async_memcpy(uint64_t src, uint64_t dst, uint64_t size) {
+uint32_t DmaSimulator::async_memcpy(uint64_t src, uint64_t dst, uint64_t size) {
     auto desc = DmaDescriptor{};
     desc.src_addr = src;
     desc.dst_addr = dst;
     desc.size = size;
     desc.valid = true;
+    desc.event_id = pimpl->next_event_id.fetch_add(1);
 
     submit_descriptor(desc);
     ring_doorbell();
+
+    return desc.event_id;
 }
 
 void DmaSimulator::submit_descriptor(const DmaDescriptor& desc) {
